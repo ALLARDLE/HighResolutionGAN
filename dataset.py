@@ -17,8 +17,8 @@ def denormalize(tensors):
 
 
 class Cifar10Mod(torchvision.datasets.CIFAR10):
-    def __init__(self, root: str, hr_shape):
-        super().__init__(root)
+    def __init__(self, root: str,train, hr_shape):
+        super().__init__(root, train=train)
         hr_height, hr_width = hr_shape
         # Transforms for low resolution images and high resolution images
         self.lr_transform = transforms.Compose(
