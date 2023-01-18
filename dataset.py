@@ -1,10 +1,7 @@
-import torch
 import torchvision
 import torchvision.transforms as transforms
 
 import glob
-import random
-import os
 import numpy as np
 
 import torch
@@ -12,26 +9,13 @@ from torch.utils.data import Dataset
 from PIL import Image
 
 transform = transforms.Compose(
-    [transforms.ToTensor(),
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+    [transforms.ToTensor()])
 
-batch_size = 4
-
-trainset = torchvision.datasets.CIFAR10(root='/data', train=True,
+trainset = torchvision.datasets.CIFAR10(root='data/', train=True,
                                         download=True, transform=transform)
 
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                          shuffle=True, num_workers=2)
-
-testset = torchvision.datasets.CIFAR10(root='/data', train=False,
+testset = torchvision.datasets.CIFAR10(root='data/', train=False,
                                        download=True, transform=transform)
-testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
-                                         shuffle=False, num_workers=2)
-
-classes = ('plane', 'car', 'bird', 'cat',
-           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-
-
 
 # Normalization parameters for pre-trained PyTorch models
 mean = np.array([0.485, 0.456, 0.406])
@@ -51,14 +35,14 @@ class ImageDataset(Dataset):
         # Transforms for low resolution images and high resolution images
         self.lr_transform = transforms.Compose(
             [
-                transforms.Resize((hr_height // 4, hr_height // 4), Image.BICUBIC),
+                transforms.Resize((hr_height // 4, hr_height // 4), transforms.InterpolationMode.BICUBIC),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std),
             ]
         )
         self.hr_transform = transforms.Compose(
             [
-                transforms.Resize((hr_height, hr_height), Image.BICUBIC),
+                transforms.Resize((hr_height, hr_height), transforms.InterpolationMode.BICUBIC),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std),
             ]
@@ -75,3 +59,31 @@ class ImageDataset(Dataset):
 
     def __len__(self):
         return len(self.files)
+
+
+class Cifar10Mod(torchvision.datasets.CIFAR10):
+    def __init__(self, root: str, hr_shape):
+        super().__init__(root)
+        hr_height, hr_width = hr_shape
+        # Transforms for low resolution images and high resolution images
+        self.lr_transform = transforms.Compose(
+            [
+                transforms.Resize((hr_height // 4, hr_height // 4), transforms.InterpolationMode.BICUBIC),
+                transforms.ToTensor(),
+                transforms.Normalize(mean, std),
+            ]
+        )
+        self.hr_transform = transforms.Compose(
+            [
+                transforms.Resize((hr_height, hr_height), transforms.InterpolationMode.BICUBIC),
+                transforms.ToTensor(),
+                transforms.Normalize(mean, std),
+            ]
+        )
+
+    def __getitem__(self, item):
+        image, target = super().__getitem__(item)
+        img_lr = self.lr_transform(image)
+        img_hr = self.hr_transform(image)
+
+        return {"lr": img_lr, "hr": img_hr}
