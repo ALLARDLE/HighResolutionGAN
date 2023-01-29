@@ -1,6 +1,7 @@
 from loguru import logger
 import sys
 
+
 class MyFilter:
     def __init__(self, level):
         self.level = level
@@ -14,6 +15,7 @@ class MyFilter:
     def __call__(self, record):
         levelno = logger.level(self.level).no
         return record["level"].no >= levelno
+
 
 def init_logger(debug=False):
     logger.remove()
@@ -37,11 +39,13 @@ def init_logger(debug=False):
 # Logging
 INFO_LOGGING_FILE_NAME = "info.log"
 DEBUG_LOGGING_FILE_NAME = "debug.log"
+
+
 def set_log_file(path):
     logger.remove()
     logger.add(sys.stdout, enqueue=True, filter=log_filter, level=0)
-    info_path = path + '\\' + INFO_LOGGING_FILE_NAME
-    debug_path = path  + '\\' + DEBUG_LOGGING_FILE_NAME
+    info_path = path + '/' + INFO_LOGGING_FILE_NAME
+    debug_path = path  + '/' + DEBUG_LOGGING_FILE_NAME
     logger.add(info_path, level="INFO")
     logger.add(debug_path, level="DEBUG")
 

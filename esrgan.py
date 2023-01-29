@@ -17,6 +17,7 @@ import itertools
 import sys
 
 import torchvision.transforms as transforms
+from torchvision.datasets import ImageFolder
 from torchvision.utils import save_image, make_grid
 
 from torch.utils.data import DataLoader
@@ -44,15 +45,14 @@ set_log_file("logs")
 parser = argparse.ArgumentParser()
 parser.add_argument("--epoch", type=int, default=0, help="epoch to start training from")
 parser.add_argument("--n_epochs", type=int, default=200, help="number of epochs of training")
-parser.add_argument("--dataset_name", type=str, default="img_align_celeba", help="name of the dataset")
 parser.add_argument("--batch_size", type=int, default=4, help="size of the batches")
 parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
 parser.add_argument("--b1", type=float, default=0.9, help="adam: decay of first order momentum of gradient")
 parser.add_argument("--b2", type=float, default=0.999, help="adam: decay of first order momentum of gradient")
 parser.add_argument("--decay_epoch", type=int, default=100, help="epoch from which to start lr decay")
-parser.add_argument("--n_cpu", type=int, default=8, help="number of cpu threads to use during batch generation")
-parser.add_argument("--hr_height", type=int, default=32, help="high res. image height")
-parser.add_argument("--hr_width", type=int, default=32, help="high res. image width")
+parser.add_argument("--n_cpu", type=int, default=2, help="number of cpu threads to use during batch generation")
+parser.add_argument("--hr_height", type=int, default=256, help="high res. image height")
+parser.add_argument("--hr_width", type=int, default=256, help="high res. image width")
 parser.add_argument("--channels", type=int, default=3, help="number of image channels")
 parser.add_argument("--sample_interval", type=int, default=1000, help="interval between saving image samples")
 parser.add_argument("--checkpoint_interval", type=int, default=5000, help="batch interval between model checkpoints")
@@ -100,8 +100,14 @@ optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=opt.lr, betas=(opt
 Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.Tensor
 
 try:
+    # dataloader = DataLoader(
+    #     Cifar10Mod("data/", train=True, hr_shape=hr_shape),
+    #     batch_size=opt.batch_size,
+    #     shuffle=True,
+    #     num_workers=opt.n_cpu,
+    # )
     dataloader = DataLoader(
-        Cifar10Mod("data/", train=True, hr_shape=hr_shape),
+        ImageFolderHR("data/Linnaeus_5/train/", hr_shape=hr_shape),
         batch_size=opt.batch_size,
         shuffle=True,
         num_workers=opt.n_cpu,
