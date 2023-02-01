@@ -34,13 +34,11 @@ from loguru import logger
 from utils import *
 from time import time
 
-
 os.makedirs("images/training", exist_ok=True)
 os.makedirs("saved_models", exist_ok=True)
 os.makedirs("logs", exist_ok=True)
 init_logger()
 set_log_file("logs")
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--epoch", type=int, default=0, help="epoch to start training from")
@@ -81,7 +79,7 @@ try:
     criterion_content = torch.nn.L1Loss().to(device)
     criterion_pixel = torch.nn.L1Loss().to(device)
     logger.info('Model and losses intialized')
-except :
+except:
     logger.exception("Error in model and losses initialization")
 
 if opt.epoch != 0:
@@ -132,8 +130,10 @@ try:
             imgs_hr = Variable(imgs["hr"].type(Tensor)).to(device)
 
             # Adversarial ground truths
-            valid = Variable(Tensor(np.ones((imgs_lr.size(0), *discriminator.output_shape))), requires_grad=False).to(device)
-            fake = Variable(Tensor(np.zeros((imgs_lr.size(0), *discriminator.output_shape))), requires_grad=False).to(device)
+            valid = Variable(Tensor(np.ones((imgs_lr.size(0), *discriminator.output_shape))), requires_grad=False).to(
+                device)
+            fake = Variable(Tensor(np.zeros((imgs_lr.size(0), *discriminator.output_shape))), requires_grad=False).to(
+                device)
 
             # ------------------
             #  Train Generators
@@ -151,10 +151,9 @@ try:
                 # Warm-up (pixel-wise loss only)
                 loss_pixel.backward()
                 optimizer_G.step()
-                logger.debug(
-                    "[Epoch %d/%d] [Batch %d/%d] [G pixel: %f]"
-                    % (epoch, opt.n_epochs, i, len(dataloader), loss_pixel.item())
-                )
+                logger.debug(str({"Epoch": "%d/%d" % (epoch, opt.n_epochs),
+                                  "Batch": "%d/%d" % (i, len(dataloader)),
+                                  "G_pixel": "%f" % loss_pixel.item()}))
                 continue
 
             # Extract validity predictions from discriminator
@@ -197,21 +196,14 @@ try:
             # --------------
             #  Log Progress
             # --------------
-
-            logger.debug(
-                "[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f, content: %f, adv: %f, pixel: %f]"
-                % (
-                    epoch,
-                    opt.n_epochs,
-                    i,
-                    len(dataloader),
-                    loss_D.item(),
-                    loss_G.item(),
-                    loss_content.item(),
-                    loss_GAN.item(),
-                    loss_pixel.item(),
-                )
-            )
+            logger.debug(str({"Epoch": "%d/%d" % (epoch, opt.n_epochs),
+                              "Batch": "%d/%d" % (i, len(dataloader)),
+                              "D_loss": "%f" % loss_D.item(),
+                              "G_loss": "%f" % loss_G.item(),
+                              "content": "%f" % loss_content.item(),
+                              "adv": "%f" % loss_GAN.item(),
+                              "pixel": "%f" % loss_pixel.item(),
+                              }))
 
             if batches_done % opt.sample_interval == 0:
                 # Save image grid with upsampled inputs and ESRGAN outputs
@@ -225,7 +217,7 @@ try:
                 temp = epoch
                 epoch = 0
                 torch.save(generator.state_dict(), "saved_models/generator_%d.pth" % epoch)
-                torch.save(discriminator.state_dict(), "saved_models/discriminator_%d.pth" %epoch)
+                torch.save(discriminator.state_dict(), "saved_models/discriminator_%d.pth" % epoch)
                 epoch = temp
                 logger.debug(f'Models saved for epoch {epoch}')
 except:

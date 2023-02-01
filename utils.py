@@ -27,7 +27,7 @@ def init_logger(debug=False):
         sys.stdout,
         enqueue=True,
         filter=log_filter,
-        format="<blue>{time:YYYY-MM-DD HH:mm:ss}</> | {message}",
+        format="<blue>{time:YYYY-MM-DD HH:mm:ss}</> || {message}",
         level=0,
         backtrace=True, diagnose=True,
     )
@@ -35,6 +35,7 @@ def init_logger(debug=False):
         log_filter.set_to_debug_level()
     else:
         log_filter.set_to_info_level()
+
 
 # Logging
 INFO_LOGGING_FILE_NAME = "info.log"
@@ -45,10 +46,6 @@ def set_log_file(path):
     logger.remove()
     logger.add(sys.stdout, enqueue=True, filter=log_filter, level=0)
     info_path = path + '/' + INFO_LOGGING_FILE_NAME
-    debug_path = path  + '/' + DEBUG_LOGGING_FILE_NAME
+    debug_path = path + '/' + DEBUG_LOGGING_FILE_NAME
     logger.add(info_path, level="INFO")
     logger.add(debug_path, level="DEBUG")
-
-
-
-
